@@ -12,6 +12,8 @@ namespace Tesseract.ConsoleDemo
         public string Name { get; set; }
         [JsonProperty("item_type")]
         public string Type { get; set; }
+        [JsonProperty("ducat_value")]
+        public int Ducats { get; set; }
 
         public WarframeItem() { }
     }
