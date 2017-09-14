@@ -32,6 +32,7 @@ namespace Tesseract.ConsoleDemo
             Console.Title = WINDOW_TITLE;
 
             engine = new TesseractEngine(@"./tessdata", "eng", EngineMode.Default);
+            engine.SetVariable("tessedit_char_whitelist", "ABCDEFGHIJKLMNOUPRSQTUWYXVZ");
             LoadItems();
             Console.WriteLine("Program startup completed!");
             Console.WriteLine("Awaiting screenshots [PrintScreen]");
@@ -123,7 +124,6 @@ namespace Tesseract.ConsoleDemo
                 using (var img = Pix.LoadFromFile(testImagePath))
                 using (var page = engine.Process(img))
                 {
-                    var text = page.GetText();
                     using (var iter = page.GetIterator())
                     {
                         iter.Begin();
@@ -160,9 +160,21 @@ namespace Tesseract.ConsoleDemo
         {
             Console.WriteLine("\nLooking for matching items");
             List<WarframeItem> foundItems = new List<WarframeItem>();
+            string result = imageProcessResult.Replace(" ", string.Empty)
+                .Replace("\n", string.Empty)
+                .Replace("\r", string.Empty);
+
             foreach (WarframeItem item in Items)
             {
-                if (imageProcessResult.Contains(item.Name.ToUpper()))
+                string[] itemName = item.Name.ToUpper().Split(' ');
+                string pattern = String.Format("({0})", itemName[0]);
+
+                for (int i = 1; i < itemName.Length; i++)
+                    pattern += "[\ta-zA-Z]{0,30}(" + itemName[i] + ")";
+
+                Regex regex = new Regex(pattern);
+
+                if (regex.IsMatch(result))
                     foundItems.Add(item);
             }
             return foundItems;
